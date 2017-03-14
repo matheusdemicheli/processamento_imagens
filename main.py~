@@ -79,7 +79,7 @@ class MainApp(App):
         Carrega a imagem na tela.
         """
 #        layout = GridLayout(cols=2, row_force_default=True, row_default_height=40)
-        return MainLayout()
+        return BoxLayout()
 #       return MainWidget()
         #return self.mostrar_imagem_cinza()
         #return self.mostrar_imagem_equalizada()

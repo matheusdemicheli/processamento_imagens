@@ -1,0 +1,22 @@
+<MainLayout>:
+    rows: 2
+    Button:
+        text: 'Carregar Imagem'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item1')
+    Button:
+        text: 'Escala de Cinza'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item2')
+    Button:
+        text: 'Histograma'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item2')
+    Button:
+        text: 'Histograma Equalizado'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item2')
