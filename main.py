@@ -8,27 +8,29 @@ from kivy.uix.image import Image
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
+from kivy.properties import ObjectProperty
 
 from utils import Imagem
 
 
+class MenuDropDown(DropDown):
+    """
+    Menu.
+    """
+    def select(self, id_botao, *args, **kwargs):
+        from IPython import embed; embed()
+        pass
+
 class MainLayout(BoxLayout):
-    pass
-
-
-class MainApp(App):
     """
-    Aplicação.
+    Layout principal da aplicação.
     """
-
-    caminho_imagem = 'imagens/imagem_escura.jpg'
 
     def __init__(self, *args, **kwargs):
-        """
-        Definição de atributos.
-        """
-        self.imagem = Imagem(self.caminho_imagem)
-        super(MainApp, self).__init__(*args, **kwargs)
+        super(MainLayout, self).__init__(*args, **kwargs)
+        self.menu = MenuDropDown()
+        self.imagem = Image()
 
     def mostrar_imagem_cinza(self):
         """
@@ -56,34 +58,27 @@ class MainApp(App):
         graph = Graph(
             xlabel='Tom de Cinza',
             ylabel='Quantidade de tons',
-            #x_ticks_minor=5,
-            #x_ticks_major=25,
-            #y_ticks_major=25,
-            #y_grid_label=True,
-            #x_grid_label=True,
             padding=5,
-            #x_grid=False,
-            #y_grid=True,
             xmin=0,
             xmax=max(histograma.keys()),
             ymin=0,
             ymax=max(histograma.values())
         )
-        plot = MeshLinePlot() #color=[1, 0, 0, 1])
+        plot = MeshLinePlot()
         plot.points = histograma.items()
         graph.add_plot(plot)
         return graph
 
+
+class MainApp(App):
+    """
+    Aplicação.
+    """
     def build(self):
         """
         Carrega a imagem na tela.
         """
-#        layout = GridLayout(cols=2, row_force_default=True, row_default_height=40)
         return MainLayout()
-#       return MainWidget()
-        #return self.mostrar_imagem_cinza()
-        #return self.mostrar_imagem_equalizada()
-        #return self.mostrar_histograma()
 
 
 if __name__ == '__main__':

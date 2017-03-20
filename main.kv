@@ -1,11 +1,9 @@
-<MainLayout>:
-    rows: 2
-    cols: 3
+<MenuDropDown>:
     Button:
         text: 'Carregar Imagem'
         size_hint_y: None
         height: 44
-        on_release: root.select('item1')
+        on_release: root.select('carregar', app)
     Button:
         text: 'Escala de Cinza'
         size_hint_y: None
@@ -19,5 +17,28 @@
     Button:
         text: 'Histograma Equalizado'
         size_hint_y: None
-        height: 44
+        #height: 44
         on_release: root.select('item2')
+
+
+<MainLayout>:
+    orientation: 'vertical'
+    BoxLayout:
+        size_hint: 1, .05
+        pos_hint: {'x': 0, 'y': 1}
+        Button:
+            text: 'Imagem'
+            on_release: root.menu.open(self)
+        Button:
+            text: 'Menu 2'
+            on_release: root.menu.open(self)
+    BoxLayout:
+        Image:
+            size: root.size
+            id: imagem
+            source: 'imagens/1.jpg'
+
+    # FileChooserListView:
+    #     id: filechooser
+    #     on_selection: text_input.text = self.selection and self.selection[0] or ''
+    # GridLayout:
