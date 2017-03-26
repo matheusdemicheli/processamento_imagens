@@ -1,108 +1,54 @@
 #-*- coding: utf-8 -*-
-from collections import defaultdict
-from decimal import Decimal
-from PIL import Image
+from kivy.uix.popup import Popup
+from kivy.uix.floatlayout import FloatLayout
 
-
-class Imagem(object):
+class Janela(FloatLayout):
     """
-    Abstração de uma Imagem.
+    Janela base para carregar/salvar uma imagem.
     """
+    titulo = ''
 
-    def __init__(self, caminho_imagem, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
-        Inicialização da classe.
+        Configura o Popup.
         """
-        self.caminho_imagem = caminho_imagem
-        self.imagem = Image.open(caminho_imagem).convert("RGB")
-        self.pixels = self.imagem.load()
-        self.imagem.width, self.imagem.height = self.imagem.size
-        self.quantidade_pixels = (
-            Decimal(self.imagem.height * self.imagem.width)
+        super(Janela, self).__init__(*args, **kwargs)
+        self.popup = Popup(
+            title=self.titulo,
+            content=self,
+            size_hint=(0.9, 0.9)
         )
-        super(Imagem, self).__init__(*args, **kwargs)
 
-    def _get_xy(self):
+    def fechar(self):
         """
-        Retorna um generator das coordenadas (x, y) da imagem.
+        Fecha a janela.
         """
-        for x in range(self.imagem.width):
-            for y in range(self.imagem.height):
-                yield (x, y)
+        self.popup.dismiss()
 
-    def _get_probabilidades(self, histograma):
-        """
-        Retorna as probabilidades para cada nível de cinza do histograma da
-        imagem original.
-        """
-        probabilidades = defaultdict(lambda: 0)
-        for tom_cinza, quantidade in histograma.iteritems():
-            probabilidades[tom_cinza] = quantidade / self.quantidade_pixels
-        return probabilidades
 
-    def _get_novos_tons_cinza(self, probabilidades):
-        """
-        :return: Um dicionário do tipo: {tom_cinza: novo_tom_cinza}
+class LoadDialog(Janela):
+    """
+    Carrega uma imagem.
+    """
+    titulo = u'Carregar Imagem'
 
-        Retorna os novos tons de cinza que devem ser aplicados.
+    def carregar(self, app, caminho_arquivo):
         """
-        g = defaultdict(lambda: 0)
-        probabilidade_acumulada = 0
-        for tom_cinza, probabilidade in probabilidades.items():
-            probabilidade_acumulada += probabilidade
-            novo_tom_cinza = probabilidade_acumulada * 255
-            g[tom_cinza] = int(Decimal(novo_tom_cinza).quantize(0))
-        return g
-
-    def salvar(self, novo_caminho_imagem=None):
+        Carrega a imagem em tela.
         """
-        Salva a imagem.
+        app.main_layout.carregar_imagem(caminho_arquivo[0])
+        self.fechar()
+
+
+class SaveDialog(Janela):
+    """
+    Salva uma imagem.
+    """
+    titulo = 'Salvar Imagem'
+
+    def salvar(self, app, diretorio, nome):
         """
-        caminho_imagem = novo_caminho_imagem or self.caminho_imagem
-        self.imagem.save(caminho_imagem)
-
-    def converter_escala_cinza(self):
+        Salva uma imagem no disco.
         """
-        Converte uma imagem para escala de cinza.
-        """
-        for x, y in self._get_xy():
-            pixel = self.pixels[x, y]
-            r, g, b = self.pixels[x, y]
-            tom_cinza = int(0.3 * r + 0.59 * g + 0.11 * b)
-            self.pixels[x, y] = (tom_cinza, tom_cinza, tom_cinza)
-        return self.pixels
-
-    def get_histograma(self, equalizar=False):
-        """
-        :return: {tom_cinza: quantidade_pixels, ...}
-
-        Monta o histograma da imagem.
-        """
-        histograma = defaultdict(lambda: 0)
-        for x, y in self._get_xy():
-            r, g, b = self.pixels[x, y]
-            histograma[r] += 1
-
-        if equalizar:
-            histograma_equalizado = {}
-            probabilidades = self._get_probabilidades(histograma)
-            novos_tons = self._get_novos_tons_cinza(probabilidades)
-
-            for tom_cinza, novo_tom_cinza in novos_tons.items():
-                histograma_equalizado[novo_tom_cinza] = histograma[tom_cinza]
-            histograma = histograma_equalizado
-
-        return histograma
-
-    def equalizar_escala_cinza(self):
-        """
-        Equaliza a escala de cinza da imagem através do histograma.
-        """
-        histograma = self.get_histograma()
-        probabilidades = self._get_probabilidades(histograma)
-        novos_tons = self._get_novos_tons_cinza(probabilidades)
-
-        for x, y in self._get_xy():
-            r, g, b = self.pixels[x, y]
-            tom_cinza = novos_tons[r]
-            self.pixels[x, y] = (tom_cinza, tom_cinza, tom_cinza)
+        app.main_layout.salvar_imagem('%s/%s' % (diretorio, nome))
+        self.fechar()

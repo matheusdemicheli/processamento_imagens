@@ -3,57 +3,77 @@ import kivy
 kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
-from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.dropdown import DropDown
 from kivy.properties import ObjectProperty
 
-from utils import Imagem
+from core import Imagem
+from menus import MenuImagemDropDown
 
-
-class MenuDropDown(DropDown):
-    """
-    Menu.
-    """
-    def select(self, id_botao, *args, **kwargs):
-        from IPython import embed; embed()
-        pass
 
 class MainLayout(BoxLayout):
     """
     Layout principal da aplicação.
     """
 
+    caminho_temp = 'imagens/temp.jpg'
+    imagem = ObjectProperty()
+
     def __init__(self, *args, **kwargs):
+        """
+        Definição de atributos.
+        """
         super(MainLayout, self).__init__(*args, **kwargs)
-        self.menu = MenuDropDown()
-        self.imagem = Image()
+        self.widgets_dinamicos = []
+        self.imagem_core = None
+        self.menu_imagem = MenuImagemDropDown()
+
+    def carregar_imagem(self, caminho_imagem):
+        """
+        Carrega uma imagem.
+        """
+        self.imagem.source = caminho_imagem
+        self.imagem_core = Imagem(caminho_imagem)
+        self.imagem.reload()
+
+    def salvar_imagem(self, caminho_imagem):
+        """
+        Salva a imagem.
+        """
+        self.imagem_core.salvar(novo_caminho_imagem=caminho_imagem)
+
+    def limpar(self):
+        """
+        Remove os widgets adicionados dinâmicamente e remove a imagem.
+        """
+        for widget in self.widgets_dinamicos:
+            self.remove_widget(widget)
+        self.imagem.source = ''
+        self.imagem.reload()
+        self.imagem_core = None
 
     def mostrar_imagem_cinza(self):
         """
-        Mostra a imagem e escala de cinza.
+        Mostra a imagem em escala de cinza.
         """
-        self.imagem.converter_escala_cinza()
-        self.imagem.salvar('imagens/cinza.jpg')
-        return Image(source='imagens/cinza.jpg')
+        self.imagem_core.converter_escala_cinza()
+        self.salvar_imagem(self.caminho_temp)
+        self.carregar_imagem(self.caminho_temp)
 
     def mostrar_imagem_equalizada(self):
         """
         Mostra a imagem equalizada.
         """
-        self.imagem.converter_escala_cinza()
-        self.imagem.equalizar_escala_cinza()
-        self.imagem.salvar('imagens/equalizado.jpg')
-        return Image(source='imagens/equalizado.jpg')
+        self.imagem_core.equalizar_imagem()
+        self.salvar_imagem(self.caminho_temp)
+        self.carregar_imagem(self.caminho_temp)
 
     def mostrar_histograma(self):
         """
         Mostra o histograma da imagem.
         """
-        histograma = self.imagem.get_histograma(equalizar=True)
+        histograma = self.imagem_core.get_histograma()
 
         graph = Graph(
             xlabel='Tom de Cinza',
@@ -67,18 +87,21 @@ class MainLayout(BoxLayout):
         plot = MeshLinePlot()
         plot.points = histograma.items()
         graph.add_plot(plot)
-        return graph
+        self.widgets_dinamicos.append(graph)
+        self.add_widget(graph)
 
 
 class MainApp(App):
     """
     Aplicação.
     """
+
     def build(self):
         """
         Carrega a imagem na tela.
         """
-        return MainLayout()
+        self.main_layout = MainLayout()
+        return self.main_layout
 
 
 if __name__ == '__main__':
