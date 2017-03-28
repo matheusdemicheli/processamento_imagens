@@ -69,5 +69,4 @@ class MenuFiltros(Menu):
         """
         Aplica o filtro de correlação.
         """
-        app.main_layout.aplicar_filtro_correlacao()
     

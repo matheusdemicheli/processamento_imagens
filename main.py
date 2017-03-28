@@ -9,7 +9,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
 
 from core import Imagem
-from menus import MenuImagemDropDown
+from menus import MenuImagemDropDown, MenuFiltros
 
 
 class MainLayout(BoxLayout):
@@ -25,9 +25,18 @@ class MainLayout(BoxLayout):
         Definição de atributos.
         """
         super(MainLayout, self).__init__(*args, **kwargs)
-        self.widgets_dinamicos = []
-        self.imagem_core = None
         self.menu_imagem = MenuImagemDropDown()
+        self.menu_filtros = MenuFiltros()
+        self.imagem_core = None
+        self.widgets_dinamicos = []
+        self.carregar_imagem('imagens/1.jpg')
+
+    def recarregar_imagem(self):
+        """
+        Recarrega a imagem em tela.
+        """
+        self.salvar_imagem(caminho_imagem=self.caminho_temp)
+        self.carregar_imagem(caminho_imagem=self.caminho_temp)
 
     def carregar_imagem(self, caminho_imagem):
         """
@@ -45,29 +54,24 @@ class MainLayout(BoxLayout):
 
     def limpar(self):
         """
-        Remove os widgets adicionados dinâmicamente e remove a imagem.
+        Remove os widgets adicionados dinâmicamente.
         """
         for widget in self.widgets_dinamicos:
             self.remove_widget(widget)
-        self.imagem.source = ''
-        self.imagem.reload()
-        self.imagem_core = None
 
     def mostrar_imagem_cinza(self):
         """
         Mostra a imagem em escala de cinza.
         """
         self.imagem_core.converter_escala_cinza()
-        self.salvar_imagem(self.caminho_temp)
-        self.carregar_imagem(self.caminho_temp)
+        self.recarregar_imagem()
 
     def mostrar_imagem_equalizada(self):
         """
         Mostra a imagem equalizada.
         """
         self.imagem_core.equalizar_imagem()
-        self.salvar_imagem(self.caminho_temp)
-        self.carregar_imagem(self.caminho_temp)
+        self.recarregar_imagem()
 
     def mostrar_histograma(self):
         """
@@ -89,6 +93,12 @@ class MainLayout(BoxLayout):
         graph.add_plot(plot)
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
+
+    def aplicar_filtro_correlacao(self):
+        """
+        """
+        self.imagem_core.aplicar_filtro('correlacao')
+        self.recarregar_imagem()
 
 
 class MainApp(App):
