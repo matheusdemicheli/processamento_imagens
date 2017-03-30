@@ -58,16 +58,15 @@ class MenuImagemDropDown(Menu):
         Mostra o histograma da imagem.
         """
         app.main_layout.mostrar_histograma()
- 
+
 
 class MenuFiltros(Menu):
     """
     Menu dos filtros.
     """
-    
-    def aplicar_correlacao(self, app):
+
+    def aplicar_filtro(self, app, nome_filtro):
         """
         Aplica o filtro de correlação.
         """
-        app.main_layout.aplicar_filtro_correlacao()
-    
+        app.main_layout.aplicar_filtro(nome_filtro=nome_filtro)

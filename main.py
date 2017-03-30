@@ -94,10 +94,11 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro_correlacao(self):
+    def aplicar_filtro(self, nome_filtro):
         """
+        Aplica um filtro na imagem.
         """
-        self.imagem_core.aplicar_filtro('correlacao')
+        self.imagem_core.aplicar_filtro(nome_filtro=nome_filtro)
         self.recarregar_imagem()
 
 

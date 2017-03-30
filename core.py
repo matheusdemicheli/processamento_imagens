@@ -34,7 +34,7 @@ class Imagem(object):
         """
         x_final = x_final or self.imagem.width
         y_final = y_final or self.imagem.height
-        
+
         for x in range(x_inicio, x_final):
             for y in range(y_inicio, y_final):
                 yield (x, y)
@@ -117,40 +117,54 @@ class Filtros(object):
     """
     Filtros que podem ser aplicados na imagem.
     """
-    
+
+    matriz_filtro = [
+        [1.5/18, 2.0/18, 1.5/18],
+        [2.0/18, 4.0/18, 2.0/18],
+        [1.5/18, 2.0/18, 1.5/18],
+    ]
+
+    # matriz_filtro = [
+    #     [1.0/94, 2.0/94, 4.0/94, 2.0/94, 1.0/94],
+    #     [2.0/94, 4.0/94, 8.0/94, 4.0/94, 2.0/94],
+    #     [4.0/94, 8.0/94, 10.0/94, 8.0/94, 4.0/94],
+    #     [2.0/94, 4.0/94, 8.0/94, 4.0/94, 2.0/94],
+    #     [1.0/94, 2.0/94, 4.0/94, 2.0/94, 1.0/94],
+    # ]
+
     def __init__(self, imagem):
+        """
+        """
         self.imagem = imagem
-    
-    def correlacao(self):
+
+    def correlacao(self, rotacionar_matriz_180=False):
         """
         Aplica o filtro de correlação.
         """
         # Limita a aplicação da técnica para pontos que possuem vizinhos.
+        qtd_linhas_espaco = len(self.matriz_filtro) - 2
         generator = self.imagem._get_xy(
-            x_inicio=1, 
-            y_inicio=1,
-            x_final=self.imagem.imagem.width - 1,
-            y_final=self.imagem.imagem.height - 1,
+            x_inicio=qtd_linhas_espaco,
+            y_inicio=qtd_linhas_espaco,
+            x_final=self.imagem.imagem.width - qtd_linhas_espaco,
+            y_final=self.imagem.imagem.height - qtd_linhas_espaco,
         )
 
-        filtro = [
-            [1.5/18, 2.0/18, 1.5/18],
-            [2.0/18, 4.0/18, 2.0/18],
-            [1.5/18, 2.0/18, 1.5/18],
-        ]
+        j = (0, 1, 2)
+        if rotacionar_matriz_180:
+            j = (2, 1, 0)
 
         for x, y in generator:
             soma = 0
             for i in range(0, 3):
-                soma += self.imagem.pixels[x-1+i, y-1][0] * filtro[i][0]
-                soma += self.imagem.pixels[x-1+i, y][0] * filtro[i][1]
-                soma += self.imagem.pixels[x-1+i, y+1][0] * filtro[i][2]
+                soma += self.imagem.pixels[x-1+i, y-1][0] * self.matriz_filtro[i][j[0]]
+                soma += self.imagem.pixels[x-1+i, y][0] * self.matriz_filtro[i][j[1]]
+                soma += self.imagem.pixels[x-1+i, y+1][0] * self.matriz_filtro[i][j[2]]
             soma = int(soma)
             self.imagem.pixels[x, y] = (soma, soma, soma)
-    
+
     def convolucao(self):
         """
         Aplica o filtro de convolução.
         """
-        pass
-       
+        self.correlacao(rotacionar_matriz_180=True)

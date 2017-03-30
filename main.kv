@@ -52,7 +52,13 @@
         text: 'Correlação'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_correlacao', app)
+        on_release: root.select('aplicar_filtro', app, 'correlacao')
+    Button:
+        text: 'Convolução'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'convolucao')
+
 
 <LoadDialog>:
     BoxLayout:
