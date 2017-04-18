@@ -137,12 +137,14 @@ class Filtros(object):
         """
         self.imagem = imagem
 
-    def correlacao(self, rotacionar_matriz_180=False):
+    def _get_novo_valor(self, rotacionar=False, matriz=None):
         """
-        Aplica o filtro de correlação.
         """
+        dimensao_matriz = len(self.matriz_filtro)
+        
         # Limita a aplicação da técnica para pontos que possuem vizinhos.
-        qtd_linhas_espaco = len(self.matriz_filtro) - 2
+        qtd_linhas_espaco = dimensao_matriz - 2
+
         generator = self.imagem._get_xy(
             x_inicio=qtd_linhas_espaco,
             y_inicio=qtd_linhas_espaco,
@@ -150,21 +152,65 @@ class Filtros(object):
             y_final=self.imagem.imagem.height - qtd_linhas_espaco,
         )
 
-        j = (0, 1, 2)
-        if rotacionar_matriz_180:
-            j = (2, 1, 0)
+        j = range(dimensao_matriz)
+        if rotacionar:
+            j.reverse()
+        
+        if not matriz:       
+            for x, y in generator:
+                soma = 0
+                for i in range(0, 3):             
+                    soma += self.imagem.pixels[x-1+i, y-1][0] * self.matriz_filtro[i][j[0]]
+                    soma += self.imagem.pixels[x-1+i, y][0] * self.matriz_filtro[i][j[1]]
+                    soma += self.imagem.pixels[x-1+i, y+1][0] * self.matriz_filtro[i][j[2]]
+                yield (x, y, int(soma))
+        
+        else:
+            for y, x in generator:
+                soma = 0
+                try:
+                    for i in range(0, 3):             
+                        soma += matriz[x-1+i][y-1][0] * self.matriz_filtro[i][j[0]]
+                        soma += matriz[x-1+i][y][0] * self.matriz_filtro[i][j[1]]
+                        soma += matriz[x-1+i][y+1][0] * self.matriz_filtro[i][j[2]]
+                except:
+                    continue
+                else:
+                    yield (x, y, int(soma))
 
-        for x, y in generator:
-            soma = 0
-            for i in range(0, 3):
-                soma += self.imagem.pixels[x-1+i, y-1][0] * self.matriz_filtro[i][j[0]]
-                soma += self.imagem.pixels[x-1+i, y][0] * self.matriz_filtro[i][j[1]]
-                soma += self.imagem.pixels[x-1+i, y+1][0] * self.matriz_filtro[i][j[2]]
-            soma = int(soma)
-            self.imagem.pixels[x, y] = (soma, soma, soma)
+
+    def correlacao(self):
+        """
+        Aplica o filtro de correlação.
+        """
+        for x, y, valor in self._get_novo_valor():
+            self.imagem.pixels[x, y] = (valor, valor, valor)
 
     def convolucao(self):
         """
         Aplica o filtro de convolução.
         """
-        self.correlacao(rotacionar_matriz_180=True)
+        #for x, y, valor in self._get_novo_valor(rotacionar=True):
+        #    self.imagem.pixels[x, y] = (valor, valor, valor)
+        self.passa_alta()
+   
+    def passa_alta(self):
+        """
+        Aplica o filtro de passa alta.
+        """
+        matriz = defaultdict(lambda: range(0, self.imagem.imagem.width))
+        
+        for x, y, valor in self._get_novo_valor():
+            matriz[x][y] = (valor, valor, valor)
+
+        for j in range(self.imagem.imagem.height):
+            matriz[0][j] = self.imagem.pixels[0, j]
+            matriz[self.imagem.imagem.width -1][j] = self.imagem.pixels[self.imagem.imagem.width -1, j]
+
+        for i in range(self.imagem.imagem.width):
+            matriz[i][0] = self.imagem.pixels[i, 0]
+            matriz[i][self.imagem.imagem.height - 1] = self.imagem.pixels[i, self.imagem.imagem.height -1]
+            
+        for x, y, valor in self._get_novo_valor(matriz=matriz):
+            self.imagem.pixels[x, y] = (valor, valor, valor)
+        
