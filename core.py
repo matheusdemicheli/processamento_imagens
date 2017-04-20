@@ -162,10 +162,19 @@ class Filtros(object):
         [ 0, -1,  0],
     ]
 
+    # matriz_filtro = [
+    #     [-1, -1, -1, -1, -1],
+    #     [-1,  1,  1,  1, -1],
+    #     [-1,  1,  8,  1, -1],
+    #     [-1,  1,  1,  1, -1],
+    #     [-1, -1, -1, -1, -1],
+    # ]
+
     def __init__(self, imagem, matriz_filtro=None):
         """
         """
         self.imagem = imagem
+        self.dimensao_matriz_filtro = len(self.matriz_filtro)
 
     def _get_matriz_aux(self):
         """
@@ -180,7 +189,7 @@ class Filtros(object):
 
         for x in range(ultima_linha):
             matriz[x, 0] = self.imagem.pixels[x, 0]
-            matriz[x, ultima_coluna-1] =self.imagem.pixels[x, ultima_coluna-1]
+            matriz[x, ultima_coluna-1] = self.imagem.pixels[x, ultima_coluna-1]
 
         return matriz
 
@@ -193,50 +202,55 @@ class Filtros(object):
         matriz_imagem = matriz_imagem or self.imagem.pixels
 
         # Define a ordem que os indices da matriz de filtro serão acessados.
-        dimensao_matriz_filtro = len(self.matriz_filtro)
-        indice_matriz_filtro = range(dimensao_matriz_filtro)
+        indice_matriz_filtro = range(self.dimensao_matriz_filtro)
         if inverter_indice_filtro:
             indice_matriz_filtro.reverse()
 
         # Limita a aplicação da técnica para pontos que possuem vizinhos.
         # (Desconsidera pixels nas bordas).
-        # Ex: (7 / 2) = 3.
+        # Ex: 7 / 2 = 3.
         # 3 é a quantidade de pixels da borda da matriz até o centro.
-        tamanho_borda = dimensao_matriz_filtro / 2
+        tamanho_borda = self.dimensao_matriz_filtro / 2
 
         # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
-        generator = self.imagem._get_xy(
+        pontos_matriz = self.imagem._get_xy(
             x_inicio=tamanho_borda,
             y_inicio=tamanho_borda,
-            x_final=self.imagem.imagem.width - tamanho_borda,
-            y_final=self.imagem.imagem.height - tamanho_borda,
+            x_final=5,
+            y_final=3,
+            #x_final=self.imagem.imagem.width - tamanho_borda,
+            #y_final=self.imagem.imagem.height - tamanho_borda,
             sentido=sentido_percorrer_matriz
         )
 
         # Percorre os pixels da imagem.
-        for x, y in generator:
+        for x, y in pontos_matriz:
             soma = 0
             # Percorre os vizinhos do pixel no eixo x.
-            for i in range(dimensao_matriz_filtro):
+            for indice_i in range(self.dimensao_matriz_filtro):
                 # Percorre os vizinhos do pixels no eixo y.
-                for j in range(dimensao_matriz_filtro):
+                for indice_j in indice_matriz_filtro:
 
-                    if sentido_percorrer_matriz == 'horizontal':
-                        x_pixel = x - tamanho_borda + i
-                        y_pixel = y - tamanho_borda + j
+                    if sentido_percorrer_matriz == 'vertical':
+                        i = indice_j
+                        j = indice_i
                     else:
-                        x_pixel = x - tamanho_borda + j
-                        y_pixel = y - tamanho_borda + i
+                        i = indice_i
+                        j = indice_j
+
+                    x_pixel = x - tamanho_borda + i
+                    y_pixel = y - tamanho_borda + j
 
                     # Pega um vizinho do pixel (x, y).
                     pixels = matriz_imagem[x_pixel, y_pixel]
 
-                    # Acessa o índice da matriz de filtro.
-                    indice_j = indice_matriz_filtro[j]
-
                     # Faz a multiplicação do pixel vizinho pelo indice da
                     # matriz filtro.
-                    soma += pixels[0] * self.matriz_filtro[i][indice_j]
+                    print 'Pixel: (%s, %s) - Vizinho: (%s, %s) - matriz_filtro: (%s, %s) = %s' % (
+                        x, y, x_pixel, y_pixel, i, j, self.matriz_filtro[i][j]
+                    )
+
+                    soma += pixels[0] * self.matriz_filtro[i][j]
 
             soma = int(soma)
             if soma < 0:
@@ -244,7 +258,6 @@ class Filtros(object):
             elif soma > 255:
                 soma = 255
             yield (x, y, int(soma))
-
 
     def correlacao(self):
         """
@@ -257,21 +270,40 @@ class Filtros(object):
         """
         Aplica o filtro de convolução.
         """
-        #for x, y, valor in self._get_novo_valor(matriz, inverter_indice_filtro=True):
-        #    self.imagem.pixels[x, y] = (valor, valor, valor)
-        self.passa_alta()
+        valores = self._get_novo_valor(matriz, inverter_indice_filtro=True)
+        for x, y, valor in valores:
+            self.imagem.pixels[x, y] = (valor, valor, valor)
 
     def passa_alta(self):
         """
         Aplica o filtro de passa alta.
         """
         # Cria uma matriz auxiliar para ser utilizada como cópia da imagem.
-        matriz = self._get_matriz_aux()
+        #matriz = self._get_matriz_aux()
+        matriz = MatrizAux()
+        matriz[0,0] = 10
+        matriz[0,1] = 10
+        matriz[0,2] = 10
+        matriz[0,3] = 10
+        matriz[0,4] = 10
+        matriz[0,5] = 10
+        matriz[1,0] = 10
+        matriz[1,1] = 0
+        matriz[1,2] = 10
+        matriz[1,3] = 20
+        matriz[1,4] = 10
+        matriz[2,0] = 10
+        matriz[2,1] = 10
+        matriz[2,2] = 10
+        matriz[2,3] = 10
+        matriz[2,4] = 10
 
+        #http://www.dpi.inpe.br/~carlos/Academicos/Cursos/Pdi/pdi_filtros.htm
         # Faz a passada horizontalmente.
-        for x, y, valor in self._get_novo_valor():
+        for x, y, valor in self._get_novo_valor(matriz_imagem=matriz):
             matriz[x, y] = (valor, valor, valor)
 
+        from IPython import embed; embed()
         # Faz a passada verticalmente.
         valores = self._get_novo_valor(
             matriz_imagem=matriz,
