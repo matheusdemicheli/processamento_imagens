@@ -1,7 +1,11 @@
 #-*- coding: utf-8 -*-
+"""
+Tratamento de uma imagem.
+"""
 from collections import defaultdict
 from decimal import Decimal
 from PIL import Image
+from utils import MatrizAux
 
 
 class Imagem(object):
@@ -119,158 +123,142 @@ class Imagem(object):
         getattr(self.filtros, nome_filtro)(*args, **kwargs)
 
 
-class MatrizAux(dict):
-
-    _dicionario = {}
-
-    def __setitem__(self, xy, valor):
-        x = xy[0]
-        y = xy[1]
-
-        if x not in self._dicionario:
-            self._dicionario[x] = {}
-        self._dicionario[x][y] = valor
-
-    def __getitem__(self, xy):
-        x = xy[0]
-        y = xy[1]
-        return self._dicionario[x][y]
-
-
 class Filtros(object):
     """
     Filtros que podem ser aplicados na imagem.
     """
 
-    # matriz_filtro = [
+    # mascara = [
     #     [1.5/18, 2.0/18, 1.5/18],
     #     [2.0/18, 4.0/18, 2.0/18],
     #     [1.5/18, 2.0/18, 1.5/18],
     # ]
 
-    # matriz_filtro = [
-    #     [1.0/94, 2.0/94, 4.0/94, 2.0/94, 1.0/94],
-    #     [2.0/94, 4.0/94, 8.0/94, 4.0/94, 2.0/94],
-    #     [4.0/94, 8.0/94, 10.0/94, 8.0/94, 4.0/94],
-    #     [2.0/94, 4.0/94, 8.0/94, 4.0/94, 2.0/94],
-    #     [1.0/94, 2.0/94, 4.0/94, 2.0/94, 1.0/94],
+    # mascara = [
+    #     [ 0, -1,  0],
+    #     [-1,  4, -1],
+    #     [ 0, -1,  0],
     # ]
 
-    matriz_filtro = [
-        [ 0, -1,  0],
-        [-1,  4, -1],
-        [ 0, -1,  0],
+    mascara = [
+        [-1, -1, -1, -1, -1],
+        [-1,  1,  1,  1, -1],
+        [-1,  1,  8,  1, -1],
+        [-1,  1,  1,  1, -1],
+        [-1, -1, -1, -1, -1],
     ]
 
-    # matriz_filtro = [
-    #     [-1, -1, -1, -1, -1],
-    #     [-1,  1,  1,  1, -1],
-    #     [-1,  1,  8,  1, -1],
-    #     [-1,  1,  1,  1, -1],
-    #     [-1, -1, -1, -1, -1],
-    # ]
-
-    def __init__(self, imagem, matriz_filtro=None):
+    def __init__(self, imagem):
         """
+        Inicialização da classe.
         """
         self.imagem = imagem
-        self.dimensao_matriz_filtro = len(self.matriz_filtro)
+        self.dimensao_mascara = len(self.mascara)
 
-    def _get_matriz_aux(self):
+    def __get_matriz_aux(self):
         """
+        Retorna uma matriz de pixels auxiliar a imagem original.
+        Pré popula a matriz com os valores dos pixels das bordas (pixels que
+        não serão aplicados as filtragens).
         """
         matriz = MatrizAux()
-        ultima_linha = self.imagem.imagem.width
-        ultima_coluna = self.imagem.imagem.height
 
-        for y in range(ultima_coluna):
-            matriz[0, y] = self.imagem.pixels[0, y]
-            matriz[ultima_linha-1, y] = self.imagem.pixels[ultima_linha-1, y]
+        ultima_linha = self.imagem.imagem.width - 1
+        ultima_coluna = self.imagem.imagem.height - 1
+        tamanho_borda = self.dimensao_mascara / 2
 
-        for x in range(ultima_linha):
-            matriz[x, 0] = self.imagem.pixels[x, 0]
-            matriz[x, ultima_coluna-1] = self.imagem.pixels[x, ultima_coluna-1]
+        for y in range(self.imagem.imagem.height):
+            for x in range(tamanho_borda):
+                matriz[x, y] = self.imagem.pixels[x, y]
+                matriz[ultima_linha-x, y] = self.imagem.pixels[ultima_linha-x, y]
+
+        for x in range(self.imagem.imagem.width):
+            for y in range(tamanho_borda):
+                matriz[x, y] = self.imagem.pixels[x, y]
+                matriz[x, ultima_coluna-y] = self.imagem.pixels[x, ultima_coluna-y]
 
         return matriz
 
-    def _get_novo_valor(self,
-                        matriz_imagem=None,
-                        inverter_indice_filtro=False,
-                        sentido_percorrer_matriz='horizontal'):
+    def _get_indices_mascara(self, sentido):
         """
+        Retorna os indices de acesso da matriz de filtro.
         """
-        matriz_imagem = matriz_imagem or self.imagem.pixels
+        indices = []
 
         # Define a ordem que os indices da matriz de filtro serão acessados.
-        indice_matriz_filtro = range(self.dimensao_matriz_filtro)
-        if inverter_indice_filtro:
-            indice_matriz_filtro.reverse()
+        indice_mascara = range(self.dimensao_mascara)
+
+        if sentido == 'horizontal':
+            for i in range(self.dimensao_mascara):
+                for j in indice_mascara:
+                    indices.append((i, j))
+        else:
+            for j in indice_mascara:
+                for i in range(self.dimensao_mascara):
+                    indices.append((i, j))
+        return indices
+
+    def _aplicar_mascara(self,
+                         matriz_imagem=None,
+                         inverter_indice_filtro=False,
+                         sentido_percorrer_matriz='horizontal'):
+        """
+        Aplica a máscara do filtro para a imagem.
+        """
+        if matriz_imagem is None:
+            matriz_imagem = self.imagem.pixels
 
         # Limita a aplicação da técnica para pontos que possuem vizinhos.
         # (Desconsidera pixels nas bordas).
         # Ex: 7 / 2 = 3.
         # 3 é a quantidade de pixels da borda da matriz até o centro.
-        tamanho_borda = self.dimensao_matriz_filtro / 2
+        tamanho_borda = self.dimensao_mascara / 2
 
         # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
         pontos_matriz = self.imagem._get_xy(
             x_inicio=tamanho_borda,
             y_inicio=tamanho_borda,
-            x_final=5,
-            y_final=3,
-            #x_final=self.imagem.imagem.width - tamanho_borda,
-            #y_final=self.imagem.imagem.height - tamanho_borda,
+            x_final=self.imagem.imagem.width - tamanho_borda,
+            y_final=self.imagem.imagem.height - tamanho_borda,
             sentido=sentido_percorrer_matriz
         )
+
+        indice_mascara = self._get_indices_mascara(sentido_percorrer_matriz)
+        if inverter_indice_filtro:
+            indice_mascara.reverse()
 
         # Percorre os pixels da imagem.
         for x, y in pontos_matriz:
             soma = 0
-            # Percorre os vizinhos do pixel no eixo x.
-            for indice_i in range(self.dimensao_matriz_filtro):
-                # Percorre os vizinhos do pixels no eixo y.
-                for indice_j in indice_matriz_filtro:
-
-                    if sentido_percorrer_matriz == 'vertical':
-                        i = indice_j
-                        j = indice_i
-                    else:
-                        i = indice_i
-                        j = indice_j
-
-                    x_pixel = x - tamanho_borda + i
-                    y_pixel = y - tamanho_borda + j
-
-                    # Pega um vizinho do pixel (x, y).
-                    pixels = matriz_imagem[x_pixel, y_pixel]
-
-                    # Faz a multiplicação do pixel vizinho pelo indice da
-                    # matriz filtro.
-                    print 'Pixel: (%s, %s) - Vizinho: (%s, %s) - matriz_filtro: (%s, %s) = %s' % (
-                        x, y, x_pixel, y_pixel, i, j, self.matriz_filtro[i][j]
-                    )
-
-                    soma += pixels[0] * self.matriz_filtro[i][j]
+            for x_filtro, y_filtro in indice_mascara:
+                # Pega o valor que deve ser aplicado da matriz de filtro.
+                valor_mascara = self.mascara[x_filtro][y_filtro]
+                # Pega um vizinho do pixel (x, y).
+                x_vizinho = x - tamanho_borda + x_filtro
+                y_vizinho = y - tamanho_borda + y_filtro
+                pixel_vizinho = matriz_imagem[x_vizinho, y_vizinho][0]
+                # Multiplica o valor do pixel vizinho pelo valor do filtro.
+                soma += pixel_vizinho * valor_mascara
 
             soma = int(soma)
             if soma < 0:
                 soma = 0
             elif soma > 255:
                 soma = 255
-            yield (x, y, int(soma))
+            yield (x, y, soma)
 
     def correlacao(self):
         """
         Aplica o filtro de correlação.
         """
-        for x, y, valor in self._get_novo_valor():
+        for x, y, valor in self._aplicar_mascara():
             self.imagem.pixels[x, y] = (valor, valor, valor)
 
     def convolucao(self):
         """
         Aplica o filtro de convolução.
         """
-        valores = self._get_novo_valor(matriz, inverter_indice_filtro=True)
+        valores = self._aplicar_mascara(inverter_indice_filtro=True)
         for x, y, valor in valores:
             self.imagem.pixels[x, y] = (valor, valor, valor)
 
@@ -278,34 +266,13 @@ class Filtros(object):
         """
         Aplica o filtro de passa alta.
         """
-        # Cria uma matriz auxiliar para ser utilizada como cópia da imagem.
-        #matriz = self._get_matriz_aux()
-        matriz = MatrizAux()
-        matriz[0,0] = 10
-        matriz[0,1] = 10
-        matriz[0,2] = 10
-        matriz[0,3] = 10
-        matriz[0,4] = 10
-        matriz[0,5] = 10
-        matriz[1,0] = 10
-        matriz[1,1] = 0
-        matriz[1,2] = 10
-        matriz[1,3] = 20
-        matriz[1,4] = 10
-        matriz[2,0] = 10
-        matriz[2,1] = 10
-        matriz[2,2] = 10
-        matriz[2,3] = 10
-        matriz[2,4] = 10
-
-        #http://www.dpi.inpe.br/~carlos/Academicos/Cursos/Pdi/pdi_filtros.htm
-        # Faz a passada horizontalmente.
-        for x, y, valor in self._get_novo_valor(matriz_imagem=matriz):
+        # Aplica a máscara horizontalmente.
+        matriz = self.__get_matriz_aux()
+        for x, y, valor in self._aplicar_mascara():
             matriz[x, y] = (valor, valor, valor)
 
-        from IPython import embed; embed()
-        # Faz a passada verticalmente.
-        valores = self._get_novo_valor(
+        # Aplica a máscara verticalmente.
+        valores = self._aplicar_mascara(
             matriz_imagem=matriz,
             sentido_percorrer_matriz='vertical'
         )

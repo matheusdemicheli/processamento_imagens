@@ -106,3 +106,29 @@
             Button:
                 text: "Salvar"
                 on_release: root.salvar(app, filechooser.path, text_input.text)
+
+<MascaraDialog>:
+    text_input: text_input
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        BoxLayout:
+            Label:
+                text: "Dimensão da Máscara"
+                size_hint_y: 0.1
+                #height: 30
+            TextInput:
+                id: text_input
+                size_hint_y: 0.1
+                #height: 30
+                multiline: False
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancelar"
+                on_release: root.fechar()
+            Button:
+                text: "Salvar"
+                on_release: root.salvar(app, filechooser.path, text_input.text)

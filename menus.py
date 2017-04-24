@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 from kivy.uix.dropdown import DropDown
-from utils import LoadDialog, SaveDialog
+from utils import LoadDialog, SaveDialog, MascaraDialog
 
 
 class Menu(DropDown):
@@ -69,4 +69,6 @@ class MenuFiltros(Menu):
         """
         Aplica o filtro de correlação.
         """
+        #janela = MascaraDialog()
+        #janela.popup.open()
         app.main_layout.aplicar_filtro(nome_filtro=nome_filtro)
