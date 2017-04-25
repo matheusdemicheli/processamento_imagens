@@ -2,6 +2,7 @@
 """
 Tratamento de uma imagem.
 """
+import operator
 from collections import defaultdict
 from decimal import Decimal
 from PIL import Image
@@ -147,6 +148,26 @@ class Filtros(object):
         [-1,  1,  1,  1, -1],
         [-1, -1, -1, -1, -1],
     ]
+    
+    mascara = [
+        [-0.5,-0.5,-0.5],
+        [-0.5,4,-0.5],
+        [-0.5,-0.5,-0.5],
+    ]
+
+    mascara = [
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+        [-1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0],
+    ]
 
     def __init__(self, imagem):
         """
@@ -179,7 +200,7 @@ class Filtros(object):
 
         return matriz
 
-    def _get_indices_mascara(self, sentido):
+    def _get_indices_mascara(self, sentido='horizontal'):
         """
         Retorna os indices de acesso da matriz de filtro.
         """
@@ -278,3 +299,85 @@ class Filtros(object):
         )
         for x, y, valor in valores:
             self.imagem.pixels[x, y] = (valor, valor, valor)
+            
+    def moda(self):
+        """
+        Aplica o filtro da moda.
+        """
+        matriz = self.__get_matriz_aux()
+        tamanho_borda = self.dimensao_mascara / 2
+
+        # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
+        pontos_matriz = self.imagem._get_xy(
+            x_inicio=tamanho_borda,
+            y_inicio=tamanho_borda,
+            x_final=self.imagem.imagem.width - tamanho_borda,
+            y_final=self.imagem.imagem.height - tamanho_borda,
+        )
+        
+        vizinhos = defaultdict(lambda: 0)
+        indice_mascara = self._get_indices_mascara()
+
+        # Percorre os pixels da imagem.
+        for x, y in pontos_matriz:
+            for x_filtro, y_filtro in indice_mascara:
+                x_vizinho = x - tamanho_borda + x_filtro
+                y_vizinho = y - tamanho_borda + y_filtro
+                pixel_vizinho = self.imagem.pixels[x_vizinho, y_vizinho][0]
+                vizinhos[pixel_vizinho] += 1
+
+            moda = sorted(
+                vizinhos.items(),
+                key=operator.itemgetter(1),
+                reverse=True
+            )
+            moda = int(moda[0][0])
+            matriz[x, y] = (moda, moda, moda)
+
+        # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
+        pontos_matriz = self.imagem._get_xy(
+            x_inicio=tamanho_borda,
+            y_inicio=tamanho_borda,
+            x_final=self.imagem.imagem.width - tamanho_borda,
+            y_final=self.imagem.imagem.height - tamanho_borda,
+        )
+        for x, y in pontos_matriz:
+            self.imagem.pixels[x, y] = matriz[x, y]
+            
+    def mediana(self):
+        matriz = self.__get_matriz_aux()
+        tamanho_borda = self.dimensao_mascara / 2
+
+        # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
+        pontos_matriz = self.imagem._get_xy(
+            x_inicio=tamanho_borda,
+            y_inicio=tamanho_borda,
+            x_final=self.imagem.imagem.width - tamanho_borda,
+            y_final=self.imagem.imagem.height - tamanho_borda,
+        )
+        
+
+        indice_mascara = self._get_indices_mascara()
+
+        # Percorre os pixels da imagem.
+        for x, y in pontos_matriz:
+            vizinhos = []
+            for x_filtro, y_filtro in indice_mascara:
+                x_vizinho = x - tamanho_borda + x_filtro
+                y_vizinho = y - tamanho_borda + y_filtro
+                pixel_vizinho = self.imagem.pixels[x_vizinho, y_vizinho][0]
+                vizinhos.append(pixel_vizinho)
+
+            vizinhos.sort()
+            mediana = int(vizinhos[25/2])
+            matriz[x, y] = (mediana, mediana, mediana)
+
+        # Busca os pares de pontos (x, y) da imagem, exceto os das bordas.
+        pontos_matriz = self.imagem._get_xy(
+            x_inicio=tamanho_borda,
+            y_inicio=tamanho_borda,
+            x_final=self.imagem.imagem.width - tamanho_borda,
+            y_final=self.imagem.imagem.height - tamanho_borda,
+        )
+        for x, y in pontos_matriz:
+            self.imagem.pixels[x, y] = matriz[x, y]

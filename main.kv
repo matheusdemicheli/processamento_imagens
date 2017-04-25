@@ -63,6 +63,17 @@
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_filtro', app, 'passa_alta')
+    Button:
+        text: 'Moda'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'moda')
+    Button:
+        text: 'Mediana'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'mediana')
+
 
 <LoadDialog>:
     BoxLayout:
