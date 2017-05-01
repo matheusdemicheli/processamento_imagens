@@ -2,13 +2,18 @@
 """
 Funcionalidades específicas.
 """
-from kivy.uix.popup import Popup
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.properties import ObjectProperty
 
 
 class Janela(FloatLayout):
     """
-    Janela base para carregar/salvar uma imagem.
+    Janela base para popups da aplicação.
     """
     titulo = ''
 
@@ -62,7 +67,61 @@ class MascaraDialog(Janela):
     """
     Define a máscara que será aplicada sobre a imagem.
     """
-    titulo = u'Máscara'
+
+    area_mascara = ObjectProperty()
+    input_dimensao_mascara = ObjectProperty()
+    titulo = u'Defina a máscara para ser aplicada'
+
+    def __init__(self, nome_filtro, *args, **kwargs):
+        """
+        Guarda o nome do filtro que será aplicado.
+        """
+        super(MascaraDialog, self).__init__(*args, **kwargs)
+        self.nome_filtro = nome_filtro
+        self.inputs_matriz_mascara = []
+        self.input_dimensao_mascara.bind(text=self._change_dimensao)
+
+    def _change_dimensao(self, instancia, valor):
+        """
+        Callback para alteração de change no campo da dimensão da máscara.
+        Adiciona novos inputs para informar os valores da máscara.
+        """
+        for input_matriz in self.inputs_matriz_mascara:
+            self.area_mascara.remove_widget(input_matriz)
+
+        valor = int(valor) if valor else 0
+        if valor and valor > 0:
+            self.area_mascara.cols = valor
+            for _ in range(valor*valor):
+                text_input = TextInput(
+                    text="0",
+                    #input_filter='float',
+                    write_tab=False
+                )
+                self.inputs_matriz_mascara.append(text_input)
+                self.area_mascara.add_widget(text_input)
+
+    def aplicar_mascara(self, app):
+        """
+        Aplica uma máscara para um determinado filtro.
+        """
+        self.fechar()
+
+        mascara = Mascara()
+        dimensao = int(self.input_dimensao_mascara.text)
+
+        linha = []
+        for indice, input_text in enumerate(self.inputs_matriz_mascara, 1):
+            linha.append(eval(input_text.text))
+            if indice % dimensao == 0:
+                mascara.append(linha)
+                linha = []
+
+        app.main_layout.aplicar_filtro(
+            nome_filtro=self.nome_filtro,
+            mascara=mascara
+        )
+
 
 
 class MatrizAux(object):
@@ -70,11 +129,12 @@ class MatrizAux(object):
     Matriz que imita o comportamento da matriz de pixels do PIL (PixelAccess).
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """
         Definição do dicionário.
         """
         self._dicionario = {}
+        super(MatrizAux, self).__init__(*args, **kwargs)
 
     def __getitem__(self, xy):
         """
@@ -96,3 +156,54 @@ class MatrizAux(object):
         if x not in self._dicionario:
             self._dicionario[x] = {}
         self._dicionario[x][y] = valor
+
+
+class PixelAccessAux(MatrizAux):
+    """
+    Matriz que imita o comportamento da matriz de pixels do PIL (PixelAccess).
+    """
+
+    def __init__(self, imagem, mascara, *args, **kwargs):
+        """
+        Retorna uma matriz de pixels auxiliar a imagem original.
+        Pré popula a matriz com os valores dos pixels das bordas (pixels que
+        não serão aplicados as filtragens).
+        """
+        super(PixelAccessAux, self).__init__(*args, **kwargs)
+
+        ultima_linha = imagem.imagem.width - 1
+        ultima_coluna = imagem.imagem.height - 1
+
+        for y in range(imagem.imagem.height):
+            for x in mascara.range_tamanho_borda:
+                self[x, y] = imagem.pixels[x, y]
+                self[ultima_linha-x, y] = imagem.pixels[ultima_linha-x, y]
+
+        for x in range(imagem.imagem.width):
+            for y in mascara.range_tamanho_borda:
+                self[x, y] = imagem.pixels[x, y]
+                self[x, ultima_coluna-y] = imagem.pixels[x, ultima_coluna-y]
+
+
+class Mascara(list):
+    """
+    Mascara para ser aplicada nos filtros.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Inicialização da classe.
+        """
+        self._cache = False
+        super(Mascara, self).__init__(*args, **kwargs)
+
+    def __getattr__(self, atributo):
+        """
+        Calcula valores para serem utilizados.
+        """
+        if not self._cache:
+            self._cache = True
+            self.dimensao = len(self)
+            self.tamanho_borda = self.dimensao / 2
+            self.range_tamanho_borda = range(self.dimensao)
+        return self.__getattribute__(atributo)

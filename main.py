@@ -3,10 +3,11 @@ import kivy
 kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
-from kivy.uix.image import Image
+from kivy.core.window import Window
 from kivy.garden.graph import Graph, MeshLinePlot
-from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
 
 from core import Imagem
 from menus import MenuImagemDropDown, MenuFiltros
@@ -94,11 +95,14 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro(self, nome_filtro):
+    def aplicar_filtro(self, nome_filtro, mascara):
         """
         Aplica um filtro na imagem.
         """
-        self.imagem_core.aplicar_filtro(nome_filtro=nome_filtro)
+        self.imagem_core.aplicar_filtro(
+            nome_filtro=nome_filtro,
+            mascara=mascara
+        )
         self.recarregar_imagem()
 
 
@@ -111,6 +115,7 @@ class MainApp(App):
         """
         Carrega a imagem na tela.
         """
+        self.title = 'Processamento Digital de Imagens'
         self.main_layout = MainLayout()
         return self.main_layout
 

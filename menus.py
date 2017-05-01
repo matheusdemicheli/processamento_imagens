@@ -69,6 +69,5 @@ class MenuFiltros(Menu):
         """
         Aplica o filtro de correlação.
         """
-        #janela = MascaraDialog()
-        #janela.popup.open()
-        app.main_layout.aplicar_filtro(nome_filtro=nome_filtro)
+        janela = MascaraDialog(nome_filtro=nome_filtro)
+        janela.popup.open()

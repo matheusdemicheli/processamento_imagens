@@ -119,21 +119,28 @@
                 on_release: root.salvar(app, filechooser.path, text_input.text)
 
 <MascaraDialog>:
-    text_input: text_input
+    area_mascara: id_area_mascara
+    input_dimensao_mascara: id_input_dimensao_mascara
     BoxLayout:
-        size: root.size
         pos: root.pos
+        size: root.size
         orientation: "vertical"
         BoxLayout:
+            size_hint_y: None
+            height: 30
+            size_hint_x: 0.3
             Label:
                 text: "Dimensão da Máscara"
-                size_hint_y: 0.1
-                #height: 30
             TextInput:
-                id: text_input
-                size_hint_y: 0.1
-                #height: 30
+                id: id_input_dimensao_mascara
+                input_filter: 'int'
+                focus: True
                 multiline: False
+                size_hint_x: None
+                width: 30
+        GridLayout:
+            id: id_area_mascara
+            padding: 10
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -141,5 +148,5 @@
                 text: "Cancelar"
                 on_release: root.fechar()
             Button:
-                text: "Salvar"
-                on_release: root.salvar(app, filechooser.path, text_input.text)
+                text: "Aplicar Máscara"
+                on_release: root.aplicar_mascara(app)
