@@ -15,7 +15,7 @@
             id: id_imagem
             size: root.size
 
-<MenuImagemDropDown>:
+<MenuImagem>:
     Button:
         text: 'Carregar'
         size_hint_y: None
@@ -64,16 +64,20 @@
         height: 44
         on_release: root.select('aplicar_filtro', app, 'passa_alta')
     Button:
-        text: 'Moda'
+        text: 'Média'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_filtro', app, 'moda')
+        on_release: root.select('aplicar_filtro', app, 'media')
     Button:
         text: 'Mediana'
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_filtro', app, 'mediana')
-
+    Button:
+        text: 'Moda'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'moda')
 
 <LoadDialog>:
     BoxLayout:

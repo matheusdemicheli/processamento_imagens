@@ -16,7 +16,7 @@ class Menu(DropDown):
         self.dismiss()
 
 
-class MenuImagemDropDown(Menu):
+class MenuImagem(Menu):
     """
     Menu de Imagem.
     """

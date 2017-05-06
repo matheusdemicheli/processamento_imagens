@@ -206,4 +206,5 @@ class Mascara(list):
             self.dimensao = len(self)
             self.tamanho_borda = self.dimensao / 2
             self.range_tamanho_borda = range(self.dimensao)
+            self.tamanho_mascara = self.dimensao * self.dimensao
         return self.__getattribute__(atributo)

@@ -307,3 +307,22 @@ class Filtros(object):
 
         for x, y in self._get_pontos_imagem(mascara=mascara):
             self.imagem.pixels[x, y] = matriz_aux[x, y]
+
+    def media(self, mascara):
+        """
+        Aplica o filtro da média.
+        """
+        matriz_aux = PixelAccessAux(imagem=self.imagem, mascara=mascara)
+
+        for x, y in self._get_pontos_imagem(mascara=mascara):
+            soma = 0
+            pontos_vizinhos = self._get_pontos_vizinhos(x, y, mascara)
+            for x_vizinho, y_vizinho in pontos_vizinhos:
+                pixel_vizinho = self.imagem.pixels[x_vizinho, y_vizinho][0]
+                soma += pixel_vizinho
+
+            media = int(soma / mascara.tamanho_mascara)
+            matriz_aux[x, y] = (media, media, media)
+
+        for x, y in self._get_pontos_imagem(mascara=mascara):
+            self.imagem.pixels[x, y] = matriz_aux[x, y]

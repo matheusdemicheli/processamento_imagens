@@ -10,7 +10,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 
 from core import Imagem
-from menus import MenuImagemDropDown, MenuFiltros
+from menus import MenuImagem, MenuFiltros
 
 
 class MainLayout(BoxLayout):
@@ -26,7 +26,7 @@ class MainLayout(BoxLayout):
         Definição de atributos.
         """
         super(MainLayout, self).__init__(*args, **kwargs)
-        self.menu_imagem = MenuImagemDropDown()
+        self.menu_imagem = MenuImagem()
         self.menu_filtros = MenuFiltros()
         self.imagem_core = None
         self.widgets_dinamicos = []
