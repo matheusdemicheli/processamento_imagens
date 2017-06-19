@@ -10,6 +10,9 @@
         Button:
             text: 'Filtros'
             on_release: root.menu_filtros.open(self)
+        Button:
+            text: 'Operações'
+            on_release: root.menu_operacoes.open(self)
     BoxLayout:
         Image:
             id: id_imagem
@@ -78,6 +81,14 @@
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_filtro', app, 'moda')
+
+<MenuOperacoes>:
+    Button:
+        text: 'Negação'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'negacao')
+
 
 <LoadDialog>:
     BoxLayout:

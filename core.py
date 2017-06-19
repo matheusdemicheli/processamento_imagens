@@ -326,3 +326,25 @@ class Filtros(object):
 
         for x, y in self._get_pontos_imagem(mascara=mascara):
             self.imagem.pixels[x, y] = matriz_aux[x, y]
+
+
+class Operacoes(object):
+    """
+    Aplica uma operação em uma imagem.
+    """
+
+    def __init__(self, imagem):
+        """
+        Inicialização da classe.
+        """
+        self.imagem = imagem
+        self.bit_not = lambda x: (1 << x.bit_length()) - (x+1)
+
+    def negacao(self):
+        """
+        Inverte os pixels da imagem.
+        """
+        for x, y in self.imagem._get_xy():
+            pixel = self.imagem.pixels[x, y][0]
+            pixel_not = self.bit_not(pixel)
+            self.imagem.pixels[x, y] = pixel_not

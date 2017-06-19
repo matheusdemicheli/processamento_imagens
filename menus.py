@@ -71,3 +71,15 @@ class MenuFiltros(Menu):
         """
         janela = MascaraDialog(nome_filtro=nome_filtro)
         janela.popup.open()
+
+
+class MenuOperacoes(Menu):
+    """
+    Menu de operações.
+    """
+
+    def aplicar_operacao(self, app, operacao):
+        """
+        Aplica uma operação sobre a imagem.
+        """
+        app.main_layout.aplicar_operacao(operacao=operacao)

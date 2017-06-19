@@ -9,8 +9,8 @@ from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 
-from core import Imagem
-from menus import MenuImagem, MenuFiltros
+from core import Imagem, Operacoes
+from menus import MenuImagem, MenuFiltros, MenuOperacoes
 
 
 class MainLayout(BoxLayout):
@@ -28,6 +28,7 @@ class MainLayout(BoxLayout):
         super(MainLayout, self).__init__(*args, **kwargs)
         self.menu_imagem = MenuImagem()
         self.menu_filtros = MenuFiltros()
+        self.menu_operacoes = MenuOperacoes()
         self.imagem_core = None
         self.widgets_dinamicos = []
         self.carregar_imagem('imagens/1.jpg')
@@ -103,6 +104,16 @@ class MainLayout(BoxLayout):
             nome_filtro=nome_filtro,
             mascara=mascara
         )
+        self.recarregar_imagem()
+
+    def aplicar_operacao(self, operacao):
+        """
+        Aplica uma operação sobre a imagem.
+        """
+        operacoes = Operacoes(self.imagem_core)
+        metodo_operacao = getattr(operacoes, operacao, None)
+        if metodo_operacao:
+            metodo_operacao()
         self.recarregar_imagem()
 
 
