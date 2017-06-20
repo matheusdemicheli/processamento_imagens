@@ -364,3 +364,18 @@ class Operacoes(object):
             pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
             pixel_and = pixel & pixel_segunda_imagem
             self.imagem.pixels[x, y] = (pixel_and, pixel_and, pixel_and)
+
+    def operador_or(self, segunda_imagem=None):
+        """
+        Implementação do operador lógico OR.
+        """
+        segunda_imagem = Imagem('imagens/b.png')
+        minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
+        minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
+        pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
+
+        for x, y in pixels:
+            pixel = self.imagem.pixels[x, y][0]
+            pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
+            pixel_and = pixel | pixel_segunda_imagem
+            self.imagem.pixels[x, y] = (pixel_and, pixel_and, pixel_and)

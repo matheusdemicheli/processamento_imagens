@@ -93,7 +93,11 @@
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_operacao', app, 'operador_and')
-
+    Button:
+        text: 'OR'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_or')
 
 <LoadDialog>:
     BoxLayout:
