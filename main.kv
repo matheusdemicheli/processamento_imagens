@@ -98,6 +98,26 @@
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_operacao', app, 'operador_or')
+    Button:
+        text: 'Soma'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_soma')
+    Button:
+        text: 'Subtração'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_subtracao')
+    Button:
+        text: 'Multiplicação'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_multiplicao')
+    Button:
+        text: 'Divisão'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_divisao')
 
 <LoadDialog>:
     BoxLayout:
