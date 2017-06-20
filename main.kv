@@ -84,10 +84,15 @@
 
 <MenuOperacoes>:
     Button:
-        text: 'Negação'
+        text: 'NOT'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_operacao', app, 'negacao')
+        on_release: root.select('aplicar_operacao', app, 'operador_not')
+    Button:
+        text: 'AND'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_and')
 
 
 <LoadDialog>:

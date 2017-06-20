@@ -340,11 +340,27 @@ class Operacoes(object):
         self.imagem = imagem
         self.bit_not = lambda x: (1 << x.bit_length()) - (x+1)
 
-    def negacao(self):
+    def operador_not(self):
         """
         Inverte os pixels da imagem.
+        Implementação do operador lógico NOT.
         """
         for x, y in self.imagem._get_xy():
             pixel = self.imagem.pixels[x, y][0]
             pixel_not = self.bit_not(pixel)
-            self.imagem.pixels[x, y] = pixel_not
+            self.imagem.pixels[x, y] = (pixel_not, pixel_not, pixel_not)
+
+    def operador_and(self, segunda_imagem=None):
+        """
+        Implementação do operador lógico AND.
+        """
+        segunda_imagem = Imagem('imagens/b.png')
+        minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
+        minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
+        pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
+
+        for x, y in pixels:
+            pixel = self.imagem.pixels[x, y][0]
+            pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
+            pixel_and = pixel & pixel_segunda_imagem
+            self.imagem.pixels[x, y] = (pixel_and, pixel_and, pixel_and)
