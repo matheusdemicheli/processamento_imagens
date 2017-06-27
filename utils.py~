@@ -1,108 +1,218 @@
 #-*- coding: utf-8 -*-
-from collections import defaultdict
-from decimal import Decimal
-from PIL import Image
+"""
+Funcionalidades específicas.
+"""
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.properties import ObjectProperty
 
 
-class Imagem(object):
+class Janela(FloatLayout):
     """
-    Abstração de uma Imagem.
+    Janela base para popups da aplicação.
+    """
+    titulo = ''
+
+    def __init__(self, *args, **kwargs):
+        """
+        Configura o Popup.
+        """
+        self.origem = kwargs.pop('origem', None)
+        self.operacao = kwargs.pop('operacao', None)      
+        super(Janela, self).__init__(*args, **kwargs)
+        self.popup = Popup(
+            title=self.titulo,
+            content=self,
+            size_hint=(0.9, 0.9)
+        )
+
+    def fechar(self):
+        """
+        Fecha a janela.
+        """
+        self.popup.dismiss()
+
+
+class LoadDialog(Janela):
+    """
+    Carrega uma imagem.
+    """
+    titulo = u'Carregar Imagem'
+
+    def carregar(self, app, caminho_arquivo):
+        """
+        Carrega a imagem em tela.
+        """
+        from core import Imagem
+
+        if self.origem == 'operacoes':
+            imagem = Imagem(caminho_arquivo[0])
+            app.main_layout.aplicar_operacao(operacao=operacao, imagem=imagem)
+        else:
+            app.main_layout.carregar_imagem(caminho_arquivo[0])
+        self.fechar()
+
+
+class SaveDialog(Janela):
+    """
+    Salva uma imagem.
+    """
+    titulo = 'Salvar Imagem'
+
+    def salvar(self, app, diretorio, nome):
+        """
+        Salva uma imagem no disco.
+        """
+        app.main_layout.salvar_imagem('%s/%s' % (diretorio, nome))
+        self.fechar()
+
+
+class MascaraDialog(Janela):
+    """
+    Define a máscara que será aplicada sobre a imagem.
     """
 
-    def __init__(self, caminho_imagem, *args, **kwargs):
+    area_mascara = ObjectProperty()
+    input_dimensao_mascara = ObjectProperty()
+    titulo = u'Defina a máscara para ser aplicada'
+
+    def __init__(self, nome_filtro, *args, **kwargs):
+        """
+        Guarda o nome do filtro que será aplicado.
+        """
+        super(MascaraDialog, self).__init__(*args, **kwargs)
+        self.nome_filtro = nome_filtro
+        self.inputs_matriz_mascara = []
+        self.input_dimensao_mascara.bind(text=self._change_dimensao)
+
+    def _change_dimensao(self, instancia, valor):
+        """
+        Callback para alteração de change no campo da dimensão da máscara.
+        Adiciona novos inputs para informar os valores da máscara.
+        """
+        for input_matriz in self.inputs_matriz_mascara:
+            self.area_mascara.remove_widget(input_matriz)
+
+        valor = int(valor) if valor else 0
+        if valor and valor > 0:
+            self.area_mascara.cols = valor
+            for _ in range(valor*valor):
+                text_input = TextInput(
+                    text="0",
+                    #input_filter='float',
+                    write_tab=False
+                )
+                self.inputs_matriz_mascara.append(text_input)
+                self.area_mascara.add_widget(text_input)
+
+    def aplicar_mascara(self, app):
+        """
+        Aplica uma máscara para um determinado filtro.
+        """
+        self.fechar()
+
+        mascara = Mascara()
+        dimensao = int(self.input_dimensao_mascara.text)
+
+        linha = []
+        for indice, input_text in enumerate(self.inputs_matriz_mascara, 1):
+            linha.append(eval(input_text.text))
+            if indice % dimensao == 0:
+                mascara.append(linha)
+                linha = []
+
+        app.main_layout.aplicar_filtro(
+            nome_filtro=self.nome_filtro,
+            mascara=mascara
+        )
+
+
+
+class MatrizAux(object):
+    """
+    Matriz que imita o comportamento da matriz de pixels do PIL (PixelAccess).
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Definição do dicionário.
+        """
+        self._dicionario = {}
+        super(MatrizAux, self).__init__(*args, **kwargs)
+
+    def __getitem__(self, xy):
+        """
+        Acessa uma posição da matriz na forma
+        matriz[x, y].
+        """
+        x = xy[0]
+        y = xy[1]
+        return self._dicionario[x][y]
+
+    def __setitem__(self, xy, valor):
+        """
+        Seta um valor para a matriz na forma
+        matriz[x, y] = valor.
+        """
+        x = xy[0]
+        y = xy[1]
+
+        if x not in self._dicionario:
+            self._dicionario[x] = {}
+        self._dicionario[x][y] = valor
+
+
+class PixelAccessAux(MatrizAux):
+    """
+    Matriz que imita o comportamento da matriz de pixels do PIL (PixelAccess).
+    """
+
+    def __init__(self, imagem, mascara, *args, **kwargs):
+        """
+        Retorna uma matriz de pixels auxiliar a imagem original.
+        Pré popula a matriz com os valores dos pixels das bordas (pixels que
+        não serão aplicados as filtragens).
+        """
+        super(PixelAccessAux, self).__init__(*args, **kwargs)
+
+        ultima_linha = imagem.imagem.width - 1
+        ultima_coluna = imagem.imagem.height - 1
+
+        for y in range(imagem.imagem.height):
+            for x in mascara.range_tamanho_borda:
+                self[x, y] = imagem.pixels[x, y]
+                self[ultima_linha-x, y] = imagem.pixels[ultima_linha-x, y]
+
+        for x in range(imagem.imagem.width):
+            for y in mascara.range_tamanho_borda:
+                self[x, y] = imagem.pixels[x, y]
+                self[x, ultima_coluna-y] = imagem.pixels[x, ultima_coluna-y]
+
+
+class Mascara(list):
+    """
+    Mascara para ser aplicada nos filtros.
+    """
+
+    def __init__(self, *args, **kwargs):
         """
         Inicialização da classe.
         """
-        self.caminho_imagem = caminho_imagem
-        self.imagem = Image.open(caminho_imagem).convert("RGB")
-        self.pixels = self.imagem.load()
-        self.imagem.width, self.imagem.height = self.imagem.size
-        self.quantidade_pixels = (
-            Decimal(self.imagem.height * self.imagem.width)
-        )
-        super(Imagem, self).__init__(*args, **kwargs)
+        self._cache = False
+        super(Mascara, self).__init__(*args, **kwargs)
 
-    def _get_xy(self):
+    def __getattr__(self, atributo):
         """
-        Retorna um generator das coordenadas (x, y) da imagem.
+        Calcula valores para serem utilizados.
         """
-        for x in range(self.imagem.width):
-            for y in range(self.imagem.height):
-                yield (x, y)
-
-    def _get_probabilidades(self, histograma):
-        """
-        Retorna as probabilidades para cada nível de cinza do histograma da
-        imagem original.
-        """
-        probabilidades = defaultdict(lambda: 0)
-        for tom_cinza, quantidade in histograma.iteritems():
-            probabilidades[tom_cinza] = quantidade / self.quantidade_pixels
-        return probabilidades
-
-    def _get_novos_tons_cinza(self, probabilidades):
-        """
-        :return: Um dicionário do tipo: {tom_cinza: novo_tom_cinza}
-
-        Retorna os novos tons de cinza que devem ser aplicados.
-        """
-        g = defaultdict(lambda: 0)
-        probabilidade_acumulada = 0
-        for tom_cinza, probabilidade in probabilidades.items():
-            probabilidade_acumulada += probabilidade
-            novo_tom_cinza = probabilidade_acumulada * 255
-            g[tom_cinza] = int(Decimal(novo_tom_cinza).quantize(0))
-        return g
-
-    def salvar(self, novo_caminho_imagem=None):
-        """
-        Salva a imagem.
-        """
-        caminho_imagem = novo_caminho_imagem or self.caminho_imagem
-        self.imagem.save(caminho_imagem)
-
-    def converter_escala_cinza(self):
-        """
-        Converte uma imagem para escala de cinza.
-        """
-        for x, y in self._get_xy():
-            pixel = self.pixels[x, y]
-            r, g, b = self.pixels[x, y]
-            tom_cinza = int(0.3 * r + 0.59 * g + 0.11 * b)
-            self.pixels[x, y] = (tom_cinza, tom_cinza, tom_cinza)
-        return self.pixels
-
-    def get_histograma(self, equalizar=False):
-        """
-        :return: {tom_cinza: quantidade_pixels, ...}
-
-        Monta o histograma da imagem.
-        """
-        histograma = defaultdict(lambda: 0)
-        for x, y in self._get_xy():
-            r, g, b = self.pixels[x, y]
-            histograma[r] += 1
-
-        if equalizar:
-            histograma_equalizado = {}
-            probabilidades = self._get_probabilidades(histograma)
-            novos_tons = self._get_novos_tons_cinza(probabilidades)
-
-            for tom_cinza, novo_tom_cinza in novos_tons.items():
-                histograma_equalizado[novo_tom_cinza] = histograma[tom_cinza]
-            histograma = histograma_equalizado
-
-        return histograma
-
-    def equalizar_escala_cinza(self):
-        """
-        Equaliza a escala de cinza da imagem através do histograma.
-        """
-        histograma = self.get_histograma()
-        probabilidades = self._get_probabilidades(histograma)
-        novos_tons = self._get_novos_tons_cinza(probabilidades)
-
-        for x, y in self._get_xy():
-            r, g, b = self.pixels[x, y]
-            tom_cinza = novos_tons[r]
-            self.pixels[x, y] = (tom_cinza, tom_cinza, tom_cinza)
+        if not self._cache:
+            self._cache = True
+            self.dimensao = len(self)
+            self.tamanho_borda = self.dimensao / 2
+            self.range_tamanho_borda = range(self.dimensao)
+            self.tamanho_mascara = self.dimensao * self.dimensao
+        return self.__getattribute__(atributo)

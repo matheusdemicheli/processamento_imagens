@@ -82,4 +82,8 @@ class MenuOperacoes(Menu):
         """
         Aplica uma operação sobre a imagem.
         """
-        app.main_layout.aplicar_operacao(operacao=operacao)
+        if operacao == 'not':
+            app.main_layout.aplicar_operacao(operacao=operacao)
+        else:
+            janela = LoadDialog(origem='operacoes', operacao=operacao)
+            janela.popup.open()

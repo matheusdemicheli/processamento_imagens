@@ -106,14 +106,14 @@ class MainLayout(BoxLayout):
         )
         self.recarregar_imagem()
 
-    def aplicar_operacao(self, operacao):
+    def aplicar_operacao(self, operacao, imagem=None):
         """
         Aplica uma operação sobre a imagem.
         """
         operacoes = Operacoes(self.imagem_core)
         metodo_operacao = getattr(operacoes, operacao, None)
         if metodo_operacao:
-            metodo_operacao()
+            metodo_operacao(imagem)
         self.recarregar_imagem()
 
 

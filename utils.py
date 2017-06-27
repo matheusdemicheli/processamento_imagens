@@ -21,6 +21,8 @@ class Janela(FloatLayout):
         """
         Configura o Popup.
         """
+        self.origem = kwargs.pop('origem', None)
+        self.operacao = kwargs.pop('operacao', None)      
         super(Janela, self).__init__(*args, **kwargs)
         self.popup = Popup(
             title=self.titulo,
@@ -45,7 +47,13 @@ class LoadDialog(Janela):
         """
         Carrega a imagem em tela.
         """
-        app.main_layout.carregar_imagem(caminho_arquivo[0])
+        from core import Imagem
+
+        if self.origem == 'operacoes':
+            imagem = Imagem(caminho_arquivo[0])
+            app.main_layout.aplicar_operacao(operacao=self.operacao, imagem=imagem)
+        else:
+            app.main_layout.carregar_imagem(caminho_arquivo[0])
         self.fechar()
 
 

@@ -3,13 +3,14 @@ import kivy
 kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
-from kivy.uix.image import Image
+from kivy.core.window import Window
 from kivy.garden.graph import Graph, MeshLinePlot
-from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
 
-from core import Imagem
-from menus import MenuImagemDropDown, MenuFiltros
+from core import Imagem, Operacoes
+from menus import MenuImagem, MenuFiltros, MenuOperacoes
 
 
 class MainLayout(BoxLayout):
@@ -25,10 +26,12 @@ class MainLayout(BoxLayout):
         Definição de atributos.
         """
         super(MainLayout, self).__init__(*args, **kwargs)
-        self.menu_imagem = MenuImagemDropDown()
+        self.menu_imagem = MenuImagem()
         self.menu_filtros = MenuFiltros()
+        self.menu_operacoes = MenuOperacoes()
         self.imagem_core = None
         self.widgets_dinamicos = []
+        self.carregar_imagem('imagens/1.jpg')
 
     def recarregar_imagem(self):
         """
@@ -93,10 +96,24 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro_correlacao(self):
+    def aplicar_filtro(self, nome_filtro, mascara):
         """
+        Aplica um filtro na imagem.
         """
-        self.imagem_core.aplicar_filtro('correlacao')
+        self.imagem_core.aplicar_filtro(
+            nome_filtro=nome_filtro,
+            mascara=mascara
+        )
+        self.recarregar_imagem()
+
+    def aplicar_operacao(self, operacao, imagem=None):
+        """
+        Aplica uma operação sobre a imagem.
+        """
+        operacoes = Operacoes(self.imagem_core)
+        metodo_operacao = getattr(operacoes, operacao, None)
+        if metodo_operacao:
+            metodo_operacao(imagem=imagem)
         self.recarregar_imagem()
 
 
@@ -109,6 +126,7 @@ class MainApp(App):
         """
         Carrega a imagem na tela.
         """
+        self.title = 'Processamento Digital de Imagens'
         self.main_layout = MainLayout()
         return self.main_layout
 

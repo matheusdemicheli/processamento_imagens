@@ -10,12 +10,15 @@
         Button:
             text: 'Filtros'
             on_release: root.menu_filtros.open(self)
+        Button:
+            text: 'Operações'
+            on_release: root.menu_operacoes.open(self)
     BoxLayout:
         Image:
             id: id_imagem
             size: root.size
 
-<MenuImagemDropDown>:
+<MenuImagem>:
     Button:
         text: 'Carregar'
         size_hint_y: None
@@ -64,15 +67,57 @@
         height: 44
         on_release: root.select('aplicar_filtro', app, 'passa_alta')
     Button:
-        text: 'Moda'
+        text: 'Média'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_filtro', app, 'moda')
+        on_release: root.select('aplicar_filtro', app, 'media')
     Button:
         text: 'Mediana'
         size_hint_y: None
         height: 44
         on_release: root.select('aplicar_filtro', app, 'mediana')
+    Button:
+        text: 'Moda'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'moda')
+
+<MenuOperacoes>:
+    Button:
+        text: 'NOT'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_not')
+    Button:
+        text: 'AND'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_and')
+    Button:
+        text: 'OR'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_or')
+    Button:
+        text: 'Soma'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_soma')
+    Button:
+        text: 'Subtração'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_subtracao')
+    Button:
+        text: 'Multiplicação'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_multiplicao')
+    Button:
+        text: 'Divisão'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_operacao', app, 'operador_divisao')
 
 <LoadDialog>:
     BoxLayout:
@@ -118,21 +163,28 @@
                 on_release: root.salvar(app, filechooser.path, text_input.text)
 
 <MascaraDialog>:
-    text_input: text_input
+    area_mascara: id_area_mascara
+    input_dimensao_mascara: id_input_dimensao_mascara
     BoxLayout:
-        size: root.size
         pos: root.pos
+        size: root.size
         orientation: "vertical"
         BoxLayout:
+            size_hint_y: None
+            height: 30
+            size_hint_x: 0.3
             Label:
                 text: "Dimensão da Máscara"
-                size_hint_y: 0.1
-                #height: 30
             TextInput:
-                id: text_input
-                size_hint_y: 0.1
-                #height: 30
+                id: id_input_dimensao_mascara
+                input_filter: 'int'
+                focus: True
                 multiline: False
+                size_hint_x: None
+                width: 30
+        GridLayout:
+            id: id_area_mascara
+            padding: 10
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -140,5 +192,5 @@
                 text: "Cancelar"
                 on_release: root.fechar()
             Button:
-                text: "Salvar"
-                on_release: root.salvar(app, filechooser.path, text_input.text)
+                text: "Aplicar Máscara"
+                on_release: root.aplicar_mascara(app)

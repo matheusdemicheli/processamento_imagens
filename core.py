@@ -354,7 +354,6 @@ class Operacoes(object):
         """
         Implementação do operador lógico AND.
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -369,7 +368,6 @@ class Operacoes(object):
         """
         Implementação do operador lógico OR.
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -384,7 +382,6 @@ class Operacoes(object):
         """
         Implementação do operador aritmético de soma (+).
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -401,7 +398,6 @@ class Operacoes(object):
         """
         Implementação do operador aritmético de subtracao (-).
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -418,7 +414,6 @@ class Operacoes(object):
         """
         Implementação do operador aritmético de multiplição (*).
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -435,7 +430,6 @@ class Operacoes(object):
         """
         Implementação do operador aritmético de divisão (/).
         """
-        segunda_imagem = Imagem('imagens/b.png')
         minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
         minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
         pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
@@ -443,5 +437,7 @@ class Operacoes(object):
         for x, y in pixels:
             pixel = self.imagem.pixels[x, y][0]
             pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
-            novo_pixel = pixel / pixel_segunda_imagem
-            self.imagem.pixels[x, y] = (novo_pixel, novo_pixel, novo_pixel)
+            if pixel_segunda_imagem > 0:
+                novo_pixel = pixel / pixel_segunda_imagem
+                print (pixel, pixel_segunda_imagem, novo_pixel)
+                self.imagem.pixels[x, y] = (novo_pixel, novo_pixel, novo_pixel)
