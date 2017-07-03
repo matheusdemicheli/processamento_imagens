@@ -35,11 +35,11 @@ class MenuImagem(Menu):
         janela = SaveDialog()
         janela.popup.open()
 
-    def limpar(self, app):
-        """
-        Limpa a tela.
-        """
-        app.main_layout.limpar()
+
+class MenuRealce(Menu):
+    """
+    Menu para o Realce.
+    """
 
     def mostrar_imagem_cinza(self, app):
         """
@@ -59,6 +59,13 @@ class MenuImagem(Menu):
         """
         app.main_layout.mostrar_histograma()
 
+    def limpar(self, app):
+        """
+        Limpa a tela.
+        """
+        app.main_layout.limpar()
+
+
 
 class MenuFiltros(Menu):
     """
@@ -71,6 +78,32 @@ class MenuFiltros(Menu):
         """
         janela = MascaraDialog(nome_filtro=nome_filtro)
         janela.popup.open()
+
+
+class MenuPassaAlta(MenuFiltros):
+    """
+    Menu Passa Alta.
+    """
+    pass
+
+
+class MenuPassaBaixa(MenuFiltros):
+    """
+    Menu Passa Baixa.
+    """
+    pass
+
+
+class MenuBorda(MenuFiltros):
+    """
+    Menu para técnicas de detecção de Borda.
+    """
+
+    def aplicar_filtro(self, app, nome_filtro):
+        """
+        Aplica o filtro de correlação.
+        """
+        app.main_layout.aplicar_filtro(nome_filtro=nome_filtro)
 
 
 class MenuOperacoes(Menu):

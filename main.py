@@ -10,7 +10,10 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 
 from core import Imagem, Operacoes
-from menus import MenuImagem, MenuFiltros, MenuOperacoes
+from menus import (
+    MenuImagem, MenuPassaAlta, MenuPassaBaixa,
+    MenuOperacoes, MenuRealce, MenuBorda
+)
 
 
 class MainLayout(BoxLayout):
@@ -27,8 +30,11 @@ class MainLayout(BoxLayout):
         """
         super(MainLayout, self).__init__(*args, **kwargs)
         self.menu_imagem = MenuImagem()
-        self.menu_filtros = MenuFiltros()
+        self.menu_passa_alta = MenuPassaAlta()
+        self.menu_passa_baixa = MenuPassaBaixa()
         self.menu_operacoes = MenuOperacoes()
+        self.menu_realce = MenuRealce()
+        self.menu_borda = MenuBorda()
         self.imagem_core = None
         self.widgets_dinamicos = []
         self.carregar_imagem('imagens/1.jpg')
@@ -96,7 +102,7 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro(self, nome_filtro, mascara):
+    def aplicar_filtro(self, nome_filtro, mascara=None):
         """
         Aplica um filtro na imagem.
         """
