@@ -99,11 +99,11 @@ class MenuBorda(MenuFiltros):
     Menu para técnicas de detecção de Borda.
     """
 
-    def aplicar_filtro(self, app, nome_filtro):
+    def aplicar_filtro(self, app, nome_filtro, tecnica):
         """
         Aplica o filtro de correlação.
         """
-        app.main_layout.aplicar_filtro(nome_filtro=nome_filtro)
+        app.main_layout.aplicar_filtro(nome_filtro, tecnica=tecnica)
 
 
 class MenuOperacoes(Menu):

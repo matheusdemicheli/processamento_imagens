@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 import kivy
-kivy.require('1.9.0') # replace with your current kivy version !
+#kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -102,14 +102,20 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro(self, nome_filtro, mascara=None):
+    def aplicar_filtro(self, nome_filtro, mascara=None, tecnica=None):
         """
         Aplica um filtro na imagem.
         """
-        self.imagem_core.aplicar_filtro(
-            nome_filtro=nome_filtro,
-            mascara=mascara
-        )
+        if tecnica:
+	    self.imagem_core.aplicar_filtro(
+	        nome_filtro=nome_filtro,
+                tecnica=tecnica
+	    )
+        else:
+	    self.imagem_core.aplicar_filtro(
+	        nome_filtro=nome_filtro,
+   	        mascara=mascara,
+	    )
         self.recarregar_imagem()
 
     def aplicar_operacao(self, operacao, imagem=None):

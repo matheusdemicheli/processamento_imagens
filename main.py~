@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 import kivy
-kivy.require('1.9.0') # replace with your current kivy version !
+#kivy.require('1.9.0') # replace with your current kivy version !
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -10,7 +10,10 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 
 from core import Imagem, Operacoes
-from menus import MenuImagem, MenuFiltros, MenuOperacoes
+from menus import (
+    MenuImagem, MenuPassaAlta, MenuPassaBaixa,
+    MenuOperacoes, MenuRealce, MenuBorda
+)
 
 
 class MainLayout(BoxLayout):
@@ -27,8 +30,11 @@ class MainLayout(BoxLayout):
         """
         super(MainLayout, self).__init__(*args, **kwargs)
         self.menu_imagem = MenuImagem()
-        self.menu_filtros = MenuFiltros()
+        self.menu_passa_alta = MenuPassaAlta()
+        self.menu_passa_baixa = MenuPassaBaixa()
         self.menu_operacoes = MenuOperacoes()
+        self.menu_realce = MenuRealce()
+        self.menu_borda = MenuBorda()
         self.imagem_core = None
         self.widgets_dinamicos = []
         self.carregar_imagem('imagens/1.jpg')
@@ -96,14 +102,21 @@ class MainLayout(BoxLayout):
         self.widgets_dinamicos.append(graph)
         self.add_widget(graph)
 
-    def aplicar_filtro(self, nome_filtro, mascara):
+    def aplicar_filtro(self, nome_filtro, mascara=None, tecnica=None):
         """
         Aplica um filtro na imagem.
         """
-        self.imagem_core.aplicar_filtro(
-            nome_filtro=nome_filtro,
-            mascara=mascara
-        )
+        if tecnica:
+	    self.imagem_core.aplicar_filtro(
+	        nome_filtro=nome_filtro,
+   	        mascara=mascara,
+                tecnica=tecnica
+	    )
+        else:
+	    self.imagem_core.aplicar_filtro(
+	        nome_filtro=nome_filtro,
+   	        mascara=mascara,
+	    )
         self.recarregar_imagem()
 
     def aplicar_operacao(self, operacao, imagem=None):
@@ -113,7 +126,7 @@ class MainLayout(BoxLayout):
         operacoes = Operacoes(self.imagem_core)
         metodo_operacao = getattr(operacoes, operacao, None)
         if metodo_operacao:
-            metodo_operacao(imagem=imagem)
+            metodo_operacao(imagem)
         self.recarregar_imagem()
 
 

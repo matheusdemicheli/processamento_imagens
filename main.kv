@@ -88,14 +88,24 @@
         text: 'Média Harmônica'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_filtro', app, 'media_harmonica')
+        on_release: root.select('aplicar_filtro', app, 'media')
 
 <MenuBorda>:
     Button:
         text: 'Sobel'
         size_hint_y: None
         height: 44
-        on_release: root.select('aplicar_filtro', app, 'sobel')
+        on_release: root.select('aplicar_filtro', app, 'detectar_borda', 'sobel')
+    Button:
+        text: 'Robert'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'detectar_borda', 'robert')
+    Button:
+        text: 'Priwit'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('aplicar_filtro', app, 'detectar_borda', 'priwit')
 
 <MenuOperacoes>:
     Button:

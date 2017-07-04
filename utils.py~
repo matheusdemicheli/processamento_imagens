@@ -22,7 +22,7 @@ class Janela(FloatLayout):
         Configura o Popup.
         """
         self.origem = kwargs.pop('origem', None)
-        self.operacao = kwargs.pop('operacao', None)      
+        self.operacao = kwargs.pop('operacao', None)
         super(Janela, self).__init__(*args, **kwargs)
         self.popup = Popup(
             title=self.titulo,
@@ -51,7 +51,7 @@ class LoadDialog(Janela):
 
         if self.origem == 'operacoes':
             imagem = Imagem(caminho_arquivo[0])
-            app.main_layout.aplicar_operacao(operacao=operacao, imagem=imagem)
+            app.main_layout.aplicar_operacao(operacao=self.operacao, imagem=imagem)
         else:
             app.main_layout.carregar_imagem(caminho_arquivo[0])
         self.fechar()
@@ -102,8 +102,7 @@ class MascaraDialog(Janela):
             self.area_mascara.cols = valor
             for _ in range(valor*valor):
                 text_input = TextInput(
-                    text="0",
-                    #input_filter='float',
+                    text="1",
                     write_tab=False
                 )
                 self.inputs_matriz_mascara.append(text_input)
@@ -120,7 +119,11 @@ class MascaraDialog(Janela):
 
         linha = []
         for indice, input_text in enumerate(self.inputs_matriz_mascara, 1):
-            linha.append(eval(input_text.text))
+            if input_text.text:
+                linha.append(eval(input_text.text))
+            else:
+                linha.append(0)
+
             if indice % dimensao == 0:
                 mascara.append(linha)
                 linha = []
@@ -129,7 +132,6 @@ class MascaraDialog(Janela):
             nome_filtro=self.nome_filtro,
             mascara=mascara
         )
-
 
 
 class MatrizAux(object):
@@ -198,12 +200,15 @@ class Mascara(list):
     Mascara para ser aplicada nos filtros.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, inicial=None, *args, **kwargs):
         """
         Inicialização da classe.
         """
         self._cache = False
         super(Mascara, self).__init__(*args, **kwargs)
+        if inicial:
+            for linha in inicial:
+                self.append(linha)
 
     def __getattr__(self, atributo):
         """

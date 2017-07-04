@@ -102,7 +102,7 @@ class MascaraDialog(Janela):
             self.area_mascara.cols = valor
             for _ in range(valor*valor):
                 text_input = TextInput(
-                    text="",
+                    text="1",
                     write_tab=False
                 )
                 self.inputs_matriz_mascara.append(text_input)
