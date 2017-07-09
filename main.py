@@ -46,19 +46,21 @@ class MainLayout(BoxLayout):
         self.salvar_imagem(caminho_imagem=self.caminho_temp)
         self.carregar_imagem(caminho_imagem=self.caminho_temp)
 
+    def salvar_imagem(self, caminho_imagem):
+        """
+        Salva a imagem.
+        """
+        self.imagem_core.salvar(novo_caminho_imagem=caminho_imagem)
+
     def carregar_imagem(self, caminho_imagem):
         """
         Carrega uma imagem.
         """
         self.imagem.source = caminho_imagem
         self.imagem_core = Imagem(caminho_imagem)
+        self.imagem_core.converter_escala_cinza()
+        self.salvar_imagem(caminho_imagem)
         self.imagem.reload()
-
-    def salvar_imagem(self, caminho_imagem):
-        """
-        Salva a imagem.
-        """
-        self.imagem_core.salvar(novo_caminho_imagem=caminho_imagem)
 
     def limpar(self):
         """
@@ -66,13 +68,6 @@ class MainLayout(BoxLayout):
         """
         for widget in self.widgets_dinamicos:
             self.remove_widget(widget)
-
-    def mostrar_imagem_cinza(self):
-        """
-        Mostra a imagem em escala de cinza.
-        """
-        self.imagem_core.converter_escala_cinza()
-        self.recarregar_imagem()
 
     def mostrar_imagem_equalizada(self):
         """
@@ -107,15 +102,15 @@ class MainLayout(BoxLayout):
         Aplica um filtro na imagem.
         """
         if tecnica:
-	    self.imagem_core.aplicar_filtro(
-	        nome_filtro=nome_filtro,
+            self.imagem_core.aplicar_filtro(
+                nome_filtro=nome_filtro,
                 tecnica=tecnica
-	    )
+            )
         else:
-	    self.imagem_core.aplicar_filtro(
-	        nome_filtro=nome_filtro,
-   	        mascara=mascara,
-	    )
+            self.imagem_core.aplicar_filtro(
+                nome_filtro=nome_filtro,
+                mascara=mascara,
+            )
         self.recarregar_imagem()
 
     def aplicar_operacao(self, operacao, imagem=None):
@@ -125,7 +120,11 @@ class MainLayout(BoxLayout):
         operacoes = Operacoes(self.imagem_core)
         metodo_operacao = getattr(operacoes, operacao, None)
         if metodo_operacao:
-            metodo_operacao(imagem)
+            if imagem:
+                imagem.converter_escala_cinza()
+                metodo_operacao(imagem)
+            else:
+                metodo_operacao()
         self.recarregar_imagem()
 
 

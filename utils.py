@@ -112,8 +112,6 @@ class MascaraDialog(Janela):
         """
         Aplica uma máscara para um determinado filtro.
         """
-        self.fechar()
-
         mascara = Mascara()
         dimensao = int(self.input_dimensao_mascara.text)
 
@@ -132,6 +130,7 @@ class MascaraDialog(Janela):
             nome_filtro=self.nome_filtro,
             mascara=mascara
         )
+        self.fechar()
 
 
 class MatrizAux(object):

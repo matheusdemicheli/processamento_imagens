@@ -115,7 +115,7 @@ class MenuOperacoes(Menu):
         """
         Aplica uma operação sobre a imagem.
         """
-        if operacao == 'not':
+        if operacao == 'operador_not':
             app.main_layout.aplicar_operacao(operacao=operacao)
         else:
             janela = LoadDialog(origem='operacoes', operacao=operacao)

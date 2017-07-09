@@ -354,7 +354,7 @@ class Filtros(object):
         matriz_aux = PixelAccessAux(imagem=self.imagem, mascara=mascara)
 
         soma_mascara = 0
-	for linha in mascara:
+        for linha in mascara:
             soma_mascara += sum(linha)
 
         for x, y in self._get_pontos_imagem(mascara=mascara):
@@ -382,7 +382,7 @@ class Filtros(object):
         """
         Detecção de bordas.
         """
-	if tecnica == 'sobel':
+        if tecnica == 'sobel':
             mascara_1 = self.sobel_1
             mascara_2 = self.sobel_2
         elif tecnica == 'robert':
@@ -415,8 +415,6 @@ class Filtros(object):
             matriz_aux[x, y] = (soma, soma, soma)
 
         mascara = Mascara(inicial=mascara_2)
-        matriz_aux2 = PixelAccessAux(imagem=self.imagem, mascara=mascara)
-
         # Aplica a máscara verticalmente.
         pontos_imagem = self._get_pontos_imagem(
             mascara=mascara,
@@ -439,58 +437,6 @@ class Filtros(object):
             elif soma > 255:
                 soma = 255
             self.imagem.pixels[x, y] = (soma, soma, soma)
-
-    def robert(self, **kwargs):
-        """
-        Aplicação da técnica de Sobel.
-        """
-        mascara = Mascara(inicial=self.robert_1)
-        matriz_aux = PixelAccessAux(imagem=self.imagem, mascara=mascara)
-
-        # Aplica a máscara horizontalmente.
-        for x, y in self._get_pontos_imagem(mascara=mascara):
-            soma = 0
-            for i in mascara.range_tamanho_borda:
-                for j in mascara.range_tamanho_borda:
-                    x_vizinho = x - mascara.tamanho_borda + i
-                    y_vizinho = y - mascara.tamanho_borda + j
-                    pixel_vizinho = self.imagem.pixels[x_vizinho, y_vizinho][0]
-
-                    valor_mascara = mascara[i][j]
-                    soma += pixel_vizinho * valor_mascara
-
-            soma = int(soma)
-            if soma < 0:
-                soma = 0
-            elif soma > 255:
-                soma = 255
-            matriz_aux[x, y] = (soma, soma, soma)
-
-        mascara = Mascara(inicial=self.robert_2)
-        matriz_aux2 = PixelAccessAux(imagem=self.imagem, mascara=mascara)
-
-        # Aplica a máscara verticalmente.
-        pontos_imagem = self._get_pontos_imagem(
-            mascara=mascara,
-        )
-        for x, y in pontos_imagem:
-            soma = 0
-            for i in mascara.range_tamanho_borda:
-                for j in mascara.range_tamanho_borda:
-                    x_vizinho = x - mascara.tamanho_borda + j
-                    y_vizinho = y - mascara.tamanho_borda + i
-                    pixel_vizinho = matriz_aux[x_vizinho, y_vizinho][0]
-
-                    valor_mascara = mascara[i][j]
-                    soma += pixel_vizinho * valor_mascara
-
-            soma = int(soma)
-            if soma < 0:
-                soma = 0
-            elif soma > 255:
-                soma = 255
-            self.imagem.pixels[x, y] = (soma, soma, soma)
-             
 
 
 class Operacoes(object):
@@ -541,6 +487,20 @@ class Operacoes(object):
             pixel = self.imagem.pixels[x, y][0]
             pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
             pixel_and = pixel | pixel_segunda_imagem
+            self.imagem.pixels[x, y] = (pixel_and, pixel_and, pixel_and)
+
+    def operador_xor(self, segunda_imagem=None):
+        """
+        Implementação do operador lógico OR.
+        """
+        minimo_x = min(self.imagem.imagem.width, segunda_imagem.imagem.width)
+        minimo_y = min(self.imagem.imagem.height, segunda_imagem.imagem.height)
+        pixels = self.imagem._get_xy(x_final=minimo_x, y_final=minimo_y)
+
+        for x, y in pixels:
+            pixel = self.imagem.pixels[x, y][0]
+            pixel_segunda_imagem = segunda_imagem.pixels[x, y][0]
+            pixel_and = pixel ^ pixel_segunda_imagem
             self.imagem.pixels[x, y] = (pixel_and, pixel_and, pixel_and)
 
     def operador_soma(self, segunda_imagem=None):
